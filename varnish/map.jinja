@@ -1,0 +1,28 @@
+{% set varnish = salt['grains.filter_by']({
+    'Debian': {
+        'pkg': 'varnish',
+        'service': 'varnish',
+        'config': '/etc/default/varnish',
+        'repo': {
+            'components': ['varnish-3.0']
+        },
+    },
+    'RedHat': {
+        'pkg': 'varnish',
+        'service': 'varnish',
+        'config': '/etc/sysconfig/varnish',
+        'repo': {
+            'components': ['varnish-3.0']
+        },
+    },
+    'Suse': {
+        'pkg': 'varnish',
+        'service': 'varnish',
+        'config': '/etc/sysconfig/varnish',
+    },
+    'Arch': {
+        'pkg': 'varnish',
+        'service': 'varnish',
+        'config': '/etc/default/varnish',
+    },
+}, merge=salt['pillar.get']('varnish:lookup')) %}

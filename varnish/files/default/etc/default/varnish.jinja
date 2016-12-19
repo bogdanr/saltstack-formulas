@@ -1,0 +1,19 @@
+# Managed by saltstack.
+{% set settings = salt['pillar.get']('varnish', {}) -%}
+
+START=yes
+NFILES=131072
+MEMLOCK=82000
+NPROCS="unlimited"
+RELOAD_VCL=1
+DAEMON_OPTS="-a {{ settings.get('listen', ':6081')}} \
+             -T localhost:6082 \
+             -f /etc/varnish/default.vcl \
+             -S /etc/varnish/secret \
+{%- for storage in settings.get('storages', ['malloc,256M']) %}
+             -s {{ storage }} \
+{%- endfor %}
+{%- for param, value in settings.get('params', {}).items() %}
+             -p {{ param }}={{ value }}\
+{%- endfor %}
+             {{ settings.get('extra_options', '') }}"
