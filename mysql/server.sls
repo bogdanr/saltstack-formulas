@@ -12,6 +12,7 @@ include:
 {% set mysql_host = salt['pillar.get']('mysql:server:host', 'localhost') %}
 {% set mysql_salt_user = salt['pillar.get']('mysql:salt_user:salt_user_name', mysql_root_user) %}
 {% set mysql_salt_password = salt['pillar.get']('mysql:salt_user:salt_user_password', mysql_root_password) %}
+{% set mysql_datadir = salt['pillar.get']('mysql:server:mysqld:datadir', '/var/lib/mysql') %}
 
 {% if mysql_root_password %}
 {% if os_family == 'Debian' %}
@@ -27,10 +28,10 @@ mysql_debconf:
         '{{ mysql.server }}/root_password_again': {'type': 'password', 'value': '{{ mysql_root_password }}'}
         '{{ mysql.server }}/start_on_boot': {'type': 'boolean', 'value': 'true'}
     - require_in:
-      - pkg: mysqld
+      - pkg: {{ mysql.server }}
     - require:
       - pkg: mysql_debconf_utils
-{% elif os_family == 'RedHat' or 'Suse' %}
+{% elif os_family in ['RedHat', 'Suse'] %}
 mysql_root_password:
   cmd.run:
     - name: mysqladmin --user {{ mysql_root_user }} password '{{ mysql_root_password|replace("'", "'\"'\"'") }}'
@@ -64,28 +65,62 @@ mysql_delete_anonymous_user_{{ host }}:
 # on arch linux: inital mysql datadirectory is not created
 mysql_install_datadir:
   cmd.run:
-    - name: mysql_install_db --user=mysql --basedir=/usr --datadir=/var/lib/mysql
+{% if mysql.version is defined and mysql.version >= 5.7 %}
+    - name: mysqld --initialize-insecure --user=mysql --basedir=/usr --datadir={{ mysql_datadir }}
+{% else %}
+    - name: mysql_install_db --user=mysql --basedir=/usr --datadir={{ mysql_datadir }}
+{% endif %}
     - user: root
-    - creates: /var/lib/mysql/mysql/user.frm
+    - creates: {{ mysql_datadir }}/mysql/user.frm
+    - env:
+        - TMPDIR: '/tmp'
     - require:
-      - pkg: mysqld
+      - pkg: {{ mysql.server }}
       - file: mysql_config
     - require_in:
       - service: mysqld
 {% endif %}
 
-mysqld:
+mysqld-packages:
   pkg.installed:
     - name: {{ mysql.server }}
 {% if os_family == 'Debian' and mysql_root_password %}
     - require:
       - debconf: mysql_debconf
 {% endif %}
+
+{% if os_family in ['RedHat', 'Suse'] and mysql.version is defined and mysql.version >= 5.7 %}
+# Initialize mysql database with --initialize-insecure option before starting service so we don't get locked out.
+mysql_initialize:
+  cmd.run:
+    - name: mysqld --initialize-insecure --user=mysql --basedir=/usr --datadir={{ mysql_datadir }}
+    - user: root
+    - creates: {{ mysql_datadir}}/mysql/
+    - require:
+      - pkg: {{ mysql.server }}
+{% endif %}
+
+{% if os_family in ['Gentoo'] %}
+mysql_initialize:
+  cmd.run:
+    - name: emerge --config {{ mysql.server }}
+    - user: root
+    - creates: {{ mysql_datadir}}/mysql/
+    - require:
+      - pkg: {{ mysql.server }}
+{% endif %}
+
+mysqld:
   service.running:
     - name: {{ mysql.service }}
     - enable: True
+    - require:
+      - pkg: {{ mysql.server }}
+{% if (os_family in ['RedHat', 'Suse'] and mysql.version is defined and mysql.version >= 5.7) or (os_family in ['Gentoo']) %}
+      - cmd: mysql_initialize
+{% endif %}
     - watch:
-      - pkg: mysqld
+      - pkg: {{ mysql.server }}
       - file: mysql_config
 {% if "config_directory" in mysql and "server_config" in mysql %}
       - file: mysql_server_config

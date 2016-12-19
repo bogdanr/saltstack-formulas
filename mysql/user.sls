@@ -21,6 +21,16 @@ include:
   {% set user_hosts = salt['pillar.get']('mysql:user:%s:hosts'|format(name)) %}
 {% endif %}
 
+{% if not user_hosts %}
+  {% set mine_target = salt['pillar.get']('mysql:user:%s:mine_hosts:target'|format(name)) %}
+  {% set mine_function = salt['pillar.get']('mysql:user:%s:mine_hosts:function'|format(name)) %}
+  {% set mine_expression_form = salt['pillar.get']('mysql:user:%s:mine_hosts:expr_form'|format(name)) %}
+
+  {% if mine_target and mine_function and mine_expression_form %}
+    {% set user_hosts = salt['mine.get'](mine_target, mine_function, mine_expression_form).values() %}
+  {% endif %}
+{% endif %}
+
 {% for host in user_hosts %}
 
 {% set state_id = 'mysql_user_' ~ name ~ '_' ~ host%}
@@ -69,6 +79,22 @@ include:
     - grant: {{db['grants']|join(",")}}
     - database: '{{ db['database'] }}.{{ db['table'] | default('*') }}'
     - grant_option: {{ db['grant_option'] | default(False) }}
+    {% if 'ssl' in user or 'ssl-X509' in user %}
+    - ssl_option:
+      - SSL: {{ user['ssl'] | default(False) }}
+    {% if user['ssl-X509'] is defined %}
+      - X509: {{ user['ssl-X509'] }}
+    {% endif %}
+    {% if user['ssl-SUBJECT'] is defined %}
+      - SUBJECT: {{ user['ssl-SUBJECT'] }}
+    {% endif %}
+    {% if user['ssl-ISSUER'] is defined %}
+      - ISSUER: {{ user['ssl-ISSUER'] }}
+    {% endif %}
+    {% if user['ssl-CIPHER'] is defined %}
+      - CIPHER: {{ user['ssl-CIPHER'] }}
+    {% endif %}
+    {% endif %}
     - user: {{ name }}
     - host: '{{ host }}'
     - connection_host: '{{ mysql_host }}'
