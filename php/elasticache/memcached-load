@@ -1,0 +1,3 @@
+; configuration for php elasticache module (replaces the memcached module)
+; priority=20
+extension=amazon-elasticache-cluster-client.so
