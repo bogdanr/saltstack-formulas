@@ -2,22 +2,22 @@
 
 include:
   - collectd
-  - collectd.python
 
-collectd-redis-module:
+collectd-rabbitmq-module:
   pip.installed:
-  - name: git+https://github.com/ministryofjustice/redis-collectd-plugin@make-it-a-pip
+  - name: collectd-rabbitmq
   - require_in:
     - service: collectd-service
   - watch_in:
     - service: collectd-service
 
-{{ collectd_settings.plugindirconfig }}/redis_info.conf:
+{{ collectd_settings.plugindirconfig }}/rabbitmq.conf:
   file.managed:
-    - source: salt://collectd/files/redis_info.conf
+    - source: salt://collectd/files/rabbitmq.conf
     - user: {{ collectd_settings.user }}
     - group: {{ collectd_settings.group }}
-    - mode: 644
+    - mode: 600
     - template: jinja
     - watch_in:
       - service: collectd-service
+

@@ -2,22 +2,14 @@
 
 include:
   - collectd
-  - collectd.python
 
-collectd-ntp-module:
-  pip.installed:
-  - name: collectd-ntp == 0.0.4
-  - require_in:
-    - service: collectd-service
-  - watch_in:
-    - service: collectd-service
-
-{{ collectd_settings.plugindirconfig }}/ntpd.conf:
+{{ collectd_settings.plugindirconfig }}/tcpconns.conf:
   file.managed:
-    - source: salt://collectd/files/ntpd.conf
+    - source: salt://collectd/files/tcpconns.conf
     - user: {{ collectd_settings.user }}
     - group: {{ collectd_settings.group }}
     - mode: 644
     - template: jinja
     - watch_in:
       - service: collectd-service
+
