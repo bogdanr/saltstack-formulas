@@ -1,0 +1,9 @@
+{% set map = salt['grains.filter_by']({
+    'Debian': {
+        'pkgs': ['exim4-daemon-light'],
+        'service': 'exim4',
+        'config_dir': '/etc/exim4',
+        'config_file': 'update-exim4.conf.conf',
+        'sub_dirs': ['main', 'acl', 'router', 'transport', 'retry', 'rewrite', 'auth'],
+    },
+}, grain='os', merge=salt['pillar.get']('exim:lookup'), default='Debian') %}
