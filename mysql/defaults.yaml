@@ -82,6 +82,9 @@ Debian:
         query_cache_size: 16M
         expire_logs_days: 10
         max_binlog_size: 100M
+        innodb_flush_log_at_trx_commit: 1
+        innodb_lock_wait_timeout: 50
+        innodb_file_per_table: noarg_present
       mysqldump:
         quick: noarg_present
         quote_names: noarg_present
@@ -102,9 +105,9 @@ CentOS:
 
   server: {{ mysql_engine }}-server
   service: {{ mysql_service }}
-  client: mysql
+  client: {{ mysql_engine }}
   python: MySQL-python
-  dev: mysql-devel
+  dev: {{ mysql_engine }}-devel
   config_directory: /etc/my.cnf.d/
   config:
     file: /etc/my.cnf
@@ -133,9 +136,9 @@ RedHat:
 
   server: {{ mysql_engine }}-server
   service: {{ mysql_service }}
-  client: mysql
+  client: {{ mysql_engine }}
   python: MySQL-python
-  dev: mysql-devel
+  dev: {{ mysql_engine }}-devel
   config:
     file: /etc/my.cnf
     sections:
