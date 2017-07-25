@@ -24,8 +24,8 @@ mysql_debconf:
   debconf.set:
     - name: {{ mysql.server }}
     - data:
-        '{{ mysql.server }}/root_password': {'type': 'password', 'value': '{{ mysql_root_password }}'}
-        '{{ mysql.server }}/root_password_again': {'type': 'password', 'value': '{{ mysql_root_password }}'}
+        'mysql-server/root_password': {'type': 'password', 'value': '{{ mysql_root_password }}'}
+        'mysql-server/root_password_again': {'type': 'password', 'value': '{{ mysql_root_password }}'}
         '{{ mysql.server }}/start_on_boot': {'type': 'boolean', 'value': 'true'}
     - require_in:
       - pkg: {{ mysql.server }}
@@ -56,6 +56,9 @@ mysql_delete_anonymous_user_{{ host }}:
       - pkg: mysql_python
       {%- if (mysql_salt_user == mysql_root_user) and mysql_root_password %}
       - cmd: mysql_root_password
+      {%- endif %}
+      {%- if (mysql_salt_user != mysql_root_user) %}
+      - sls: mysql.salt-user
       {%- endif %}
 {% endfor %}
 {% endif %}
