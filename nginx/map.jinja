@@ -1,123 +1,44 @@
-{% macro sls_block(dict) %}
-    {% for key, value in dict.items() %}
-    - {{ key }}: {{ value|json() }}
-    {% endfor %}
-{% endmacro %}
-
-{% set nginx = salt['pillar.get']('nginx:ng', {
-    'lookup': salt['grains.filter_by']({
-        'Debian': {
-            'package': 'nginx',
-            'service': 'nginx',
-            'webuser': 'www-data',
-            'conf_file': '/etc/nginx/nginx.conf',
-            'vhost_available': '/etc/nginx/sites-available',
-            'vhost_enabled': '/etc/nginx/sites-enabled',
-            'vhost_use_symlink': True,
-            'pid_file': '/run/nginx.pid',
-        },
-        'RedHat': {
-            'package': 'nginx',
-            'service': 'nginx',
-            'webuser': 'nginx',
-            'conf_file': '/etc/nginx/nginx.conf',
-            'vhost_available': '/etc/nginx/conf.d',
-            'vhost_enabled': '/etc/nginx/conf.d',
-            'vhost_use_symlink': False,
-            'pid_file': '/run/nginx.pid',
-            'rh_os_releasever': '$releasever',
-            'gpg_check': False,
-            'gpg_key': 'http://nginx.org/keys/nginx_signing.key',
-        },
-        'Suse': {
-            'package': 'nginx',
-            'service': 'nginx',
-            'webuser': 'nginx',
-            'conf_file': '/etc/nginx/nginx.conf',
-            'vhost_available': '/etc/nginx/conf.d',
-            'vhost_enabled': '/etc/nginx/conf.d',
-            'vhost_use_symlink': False,
-            'pid_file': '/run/nginx.pid',
-            'gpg_check': True,
-            'gpg_key': 'http://download.opensuse.org/repositories/server:/http/openSUSE_13.2/repodata/repomd.xml.key'
-        },
-        'Arch': {
-            'package': 'nginx',
-            'service': 'nginx',
-            'webuser': 'http',
-            'conf_file': '/etc/nginx/nginx.conf',
-            'vhost_available': '/etc/nginx/sites-available',
-            'vhost_enabled': '/etc/nginx/sites-enabled',
-            'vhost_use_symlink': True,
-        },
-        'Gentoo': {
-            'package': 'www-servers/nginx',
-            'service': 'nginx',
-            'webuser': 'nginx',
-            'conf_file': '/etc/nginx/nginx.conf',
-            'vhost_available': '/etc/nginx/sites-available',
-            'vhost_enabled': '/etc/nginx/sites-enabled',
-            'vhost_use_symlink': True,
-        },
-    }, default='Debian' ),
-    'install_from_source': False,
-    'install_from_ppa': False,
-    'install_from_repo': True,
-    'ppa_version': 'stable',
-    'package': {
-        'opts': {},
+{% set nginx = salt['grains.filter_by']({
+    'Debian': {
+        'apache_utils': 'apache2-utils',
+        'group_action': 'pkg.installed',
+        'group_pkg': 'build-essential',
+        'libpcre_dev': 'libpcre3-dev',
+        'libssl_dev': 'libssl-dev',
+        'pid_path': '/var/run/nginx.pid',
+        'package': 'nginx-full',
+        'default_user': 'www-data',
+        'default_group': 'www-data',
+        'disable_before_rename': False,
+        'old_init_disable': 'update-rc.d -f nginx remove',
+        'use_upstart': True,
+        'use_sysvinit': False,
+        'home': '/var/www',
+        'conf_dir': '/etc/nginx',
+        'log_dir': '/var/log/nginx',
+        'sbin_dir': '/usr/sbin',
+        'install_prefix': '/usr/local/nginx',
+        'make_flags': '-j2'
     },
-    'service': {
-        'enable': True,
-        'opts': {},
+    'RedHat': {
+        'apache_utils': 'httpd-tools',
+        'group_action': 'pkg.group_installed',
+        'group_pkg': 'Development Tools',
+        'libpcre_dev': 'pcre-devel',
+        'libssl_dev': 'openssl-devel',
+        'pid_path': '/run/nginx.pid',
+        'package': 'nginx',
+        'default_user': 'nginx',
+        'default_group': 'nginx',
+        'disable_before_rename': True,
+        'old_init_disable': 'chkconfig --del nginx',
+        'use_upstart': True,
+        'use_sysvinit': False,
+        'home': '/var/www',
+        'conf_dir': '/etc/nginx',
+        'log_dir': '/var/log/nginx',
+        'sbin_dir': '/usr/sbin',
+        'install_prefix': '/usr/local/nginx',
+        'make_flags': '-j2'
     },
-    'server': {
-        'opts': {},
-        'config': {
-            'worker_processes': 4,
-            'events': {
-                'worker_connections': 768,
-            },
-            'http': {
-                'sendfile': 'on',
-                'tcp_nopush': 'on',
-                'tcp_nodelay': 'on',
-                'keepalive_timeout': '65',
-                'types_hash_max_size': '2048',
-                'default_type': 'application/octet-stream',
-                'access_log': '/var/log/nginx/access.log',
-                'error_log': '/var/log/nginx/error.log',
-                'gzip': 'off',
-                'gzip_disable': '"msie6"',
-                'include': [
-                    '/etc/nginx/mime.types',
-                    '/etc/nginx/conf.d/*.conf',
-                    '/etc/nginx/sites-enabled/*',
-                ],
-            },
-        },
-    },
-    'vhosts': {
-        'disabled_postfix': '.disabled',
-        'symlink_opts': {},
-        'rename_opts': {},
-        'managed_opts': {},
-        'dir_opts': {
-            'makedirs': True,
-        },
-        'managed': {},
-    },
-}, merge=True) %}
-
-{% if 'user' not in nginx.server.config %}
-{% do nginx.server.config.update({
-    'user': nginx.lookup.webuser,
-})%}
-{% endif %}
-
-{% if 'pid' not in nginx.server.config and 'pid_file' in nginx.lookup %}
-{% do nginx.server.config.update({
-    'pid': nginx.lookup.pid_file,
-})%}
-{% endif %}
-
+}, grain='os_family', merge=salt['pillar.get']('nginx:lookup'), default='Debian') %}
