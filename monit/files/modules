@@ -1,0 +1,78 @@
+# -*- coding: utf-8 -*-
+# vim: ft=jinja
+
+{#- This sequence of loops is a bit harder to mantain. So in order
+    to make it a bit easier, the comments are following the example 
+    below line by line.
+
+    modules:
+      nginx_init:
+        process: 
+          custom:
+            name: nginx
+          with:
+            pidfile: /var/run/nginx.pid
+          config:
+            group: www
+            start: "/etc/init.d/nginx start"
+            stop: "/etc/init.d/nginx stop"
+          if: 
+            failed: 127.0.0.1 port 80 protocol http
+            action: restart
+-#}
+{#- module = nginx_init, 
+    module_v = {'process': {'with': {'pidfile':... #}
+{%- for module, module_v in modules.iteritems() -%}
+
+  {#- mod_name = process 
+      mod_name_v = {'custom': {'name': 'nginx'}, 'with': {'pidfile':... #}
+  {%- for mod_name, mod_name_v in module_v.iteritems() -%}
+
+    {#- if {'custom': {'name':... exist, this is our 'name'.
+        otherwise 'name' is the value of 'module' #}
+    {%- if mod_name_v.has_key('custom') %}
+      {%- set name = mod_name_v.custom.name %}
+    {% else %}
+      {%- set name = module %}
+    {%- endif -%}
+
+    {#- kind = with, config and if
+        kind_v = {'pidfile':'/var/run/pid'}, {'group': 'www', etc. #}
+    {%- for kind, kind_v in mod_name_v.iteritems() -%}
+
+    {#- element = pidfile, group, start, stop, etc. 
+        element_v = /var/run/nginx.pid, www, "/etc/init.d/nginx start", etc. #}
+      {%- for element, element_v in kind_v.iteritems() -%}
+    
+        {#- if it has 'pidfile' or 'path' then this is the 'check' line #}
+        {%- if 'pidfile' in kind_v or 'path' in kind_v %}
+check {{ mod_name }} {{ name }} with {{ element }} {{ element_v }}
+        {%- endif -%}
+      {% endfor %}
+    {% endfor %}
+    {%- for kind, kind_v in mod_name_v.iteritems() -%}
+      {%- for element, element_v in kind_v.iteritems() -%}
+
+        {#- 'config' is the lines containing 'group', 'start program', etc #}
+        {%- if 'config' in kind -%}
+
+          {#- filter 'start' to add 'program =' into this line #}
+          {%- if 'start' in element or 'stop' in element %}
+  {{ element }} program = "{{ element_v }}"
+          {%- else %}
+  {{ element }} {{ element_v }}
+          {%- endif %}
+        {%- endif -%}
+
+        {#- if filter 'if' line #}
+        {%- if 'if' in kind -%}
+
+          {#- 'action' is appended to the 'if failed' line #}
+          {%- if 'action' not in element %}
+  if {{ element }} {{ element_v }} then {{ kind_v.action }}
+          {%- endif %}
+        {%- endif %}
+      {%- endfor %}
+    {%- endfor %}
+  {% endfor %}
+{%- endfor %}

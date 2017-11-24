@@ -1,0 +1,12 @@
+set daemon  10
+
+set httpd port {{ http_access.port }} and
+  use address {{ http_access.bind }}
+{%- for host in http_access.allowed.hosts %}
+  allow {{ host }}
+{%- endfor %}
+{%- for userdata in http_access.allowed.users %}
+  allow {{ userdata[0] }}:{{ userdata[1] }}
+{%- endfor %}
+
+include {{ config_includes }}/*

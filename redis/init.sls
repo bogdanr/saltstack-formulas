@@ -1,2 +1,2 @@
 include:
-  - redis.server
+  - redis.common
