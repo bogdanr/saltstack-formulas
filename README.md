@@ -12,6 +12,7 @@ All you have to do is create a new config file `/etc/salt/master.d/git-formulas.
 ```
 fileserver_backend:
   - git
+  - roots
 
 gitfs_remotes:
   - https://github.com/bogdanr/saltstack-formulas.git
