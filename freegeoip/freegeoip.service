@@ -1,0 +1,11 @@
+[Unit]
+Description=Free GeoIP in Background
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/freegeoip -http :8888
+Restart=on-abort
+
+[Install]
+WantedBy=multi-user.target
