@@ -3,6 +3,6 @@
 include:
   - php
 
-php-curl:
+php-sybase:
   pkg.installed:
-    - name: {{ php.curl_pkg }}
+    - name: {{ php.sybase_pkg }}

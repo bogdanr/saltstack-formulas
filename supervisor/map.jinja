@@ -1,0 +1,77 @@
+# -*- coding: utf-8 -*-
+# vim: ft=jinja
+
+{% import_yaml 'supervisor/defaults.yaml' as default_settings %}
+
+{% set os_family_map = salt['grains.filter_by']({
+        'Debian': {
+            'pkg' : 'supervisor',
+            'config': '/etc/supervisor/supervisord.conf',
+            'program_dir': '/etc/supervisor/conf.d',
+            'service' : {
+                'name': 'supervisor',
+            },
+            'supervisord_conf': {
+                'unix_http_server': {
+                    'file': '/var/run/supervisor.sock',
+                    'chmod': '0700',
+                },
+                'supervisord': {
+                    'logfile': '/var/log/supervisor/supervisord.log',
+                    'pidfile': '/var/run/supervisord.pid',
+                    'childlogdir': '/var/log/supervisor',
+                },
+                'rpcinterface:supervisor': {
+                    'supervisor.rpcinterface_factory': 'supervisor.rpcinterface:make_main_rpcinterface',
+                },
+                'supervisorctl': {
+                    'serverurl': 'unix:///var/run/supervisor.sock',
+                },
+                'include': {
+                    'files': '/etc/supervisor/conf.d/*.conf',
+                },
+            },
+        },
+        'Suse'  : {},
+        'Arch'  : {},
+        'RedHat': {
+            'pkg' : 'supervisor',
+            'config': '/etc/supervisord.conf',
+            'program_dir': '/etc/supervisord.d',
+            'service' : {
+                'name': 'supervisord',
+            },
+            'supervisord_conf': {
+                'unix_http_server': {
+                    'file': '/var/run/supervisor/supervisor.sock',
+                    'chmod': '0700',
+                },
+                'supervisord': {
+                    'logfile': 'var/log/supervisor/supervisord.log',
+                    'pidfile': '/var/run/supervisord.pid',
+                    'childlogdir': '/var/log/supervisor',
+                },
+                'rpcinterface:supervisor': {
+                    'supervisor.rpcinterface_factory': 'supervisor.rpcinterface:make_main_rpcinterface',
+                },
+                'supervisorctl': {
+                    'serverurl': 'unix:///var/run/supervisor/supervisor.sock',
+                },
+                'include': {
+                    'files': 'supervisord.d/*.conf',
+                },
+            },
+        },
+  }
+  , grain="os_family"
+  , merge=salt['pillar.get']('supervisor:lookup'))
+%}
+
+{% do default_settings.supervisor.update(os_family_map) %}
+
+{% set supervisor = salt['pillar.get'](
+        'supervisor',
+        default=default_settings.supervisor,
+        merge=True
+    )
+%}

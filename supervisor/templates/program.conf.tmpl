@@ -1,0 +1,8 @@
+;;; File managed by Salt
+
+[program:{{ program }}]
+{%- for key, value in values.items() -%}
+{%- if 'enabled' not in key %}
+{{ key }}={{ value }}
+{%- endif -%}
+{% endfor -%}
