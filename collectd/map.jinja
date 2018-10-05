@@ -43,6 +43,8 @@
         'WriteQueueLimitLow': 1800000,
         'CollectInternalStats': 'false',
         'FQDNLookup': 'false',
+        'purge_plugindir': 'false',
+        'enable_service': true,
         'plugins': {
             'default': [
                 'battery',
@@ -65,8 +67,16 @@
                 ]
             },
             'bind': {
+                'proto': 'http',
                 'host': 'localhost',
                 'port': '8053',
+                'parsetime': true,
+                'opcodes': true,
+                'qtypes': true,
+                'serverstats': true,
+                'zonemaintstats': true,
+                'resolverstats': false,
+                'memorystats': true,
             },
             'csv': {
               'DataDir': '/var/lib/collectd/csv',
@@ -95,6 +105,12 @@
             'java': {
                 'host': 'localhost',
                 'port': '17264',
+            },
+            'logfile': {
+              'log_level': 'warning',
+              'file': '/var/log/collectd.log',
+              'timestamp': true,
+              'print_severity': true,
             },
             'md': {
                 'Devices': [],
@@ -129,6 +145,10 @@
             'processes': {
                 'Processes': [],
                 'ProcessMatches': []
+            },
+            'protocols': {
+                'values_': [],
+                'IgnoreSelected': True,
             },
             'statsd': {
                 'host': '"::"',
@@ -176,6 +196,12 @@
               'local_ports': [],
               'remote_ports': []
             },
+            'unixsock': {
+              'socket_file': '/var/run/collectd.socket',
+              'socket_group': 'root',
+              'socket_perms': '0644',
+              'delete_socket': true,
+            },
             'vmem': {
               'verbose': 'false'
             },
@@ -193,6 +219,10 @@
               'port': 15672,
               'username': 'guest',
               'password': 'guest'
+            },
+            'zookeeper': {
+              'host': 'localhost',
+              'port': '2181'
             }
         }
     }
