@@ -30,6 +30,16 @@
         'user': 'root',
         'group': 'wheel',
     },
+    'Suse': {
+        'config': '/etc/collectd.conf',
+        'pkg': 'collectd',
+        'plugindirconfig': '/usr/lib64/collectd',
+        'service': 'collectd',
+        'TypesDB': ['/usr/share/collectd/types.db'],
+        'moduledirconfig': '/usr/share/collectd/modules',
+        'user': 'root',
+        'group': 'root',
+    },
 }, merge=salt['pillar.get']('collectd:lookup')) %}
 
 {# Settings dictionary with default values #}
@@ -163,6 +173,9 @@
                 'prefix': 'collectd.',
                 'postfix': ''
             },
+            'write_prometheus': {
+                'port': 9103
+            },
             'write_riemann': {
                 'host': salt['grains.get']('fqdn'),
                 'port': 5555,
@@ -193,6 +206,7 @@
             },
             'tcpconns': {
               'listening_ports': 'true',
+              'all_ports_summary': 'false',
               'local_ports': [],
               'remote_ports': []
             },

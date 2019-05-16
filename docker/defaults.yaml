@@ -3,5 +3,43 @@
 docker:
   process_signature: '/usr/bin/docker'
   install_docker_py: True
+  python_package: docker
   refresh_repo: True
+  configfile: /etc/default/docker
   config: []
+  daemon_config: {}
+  version: ''
+
+  use_upstream_repo: True
+  use_old_repo: False
+  proxy: False
+
+  pkgs:
+    - iptables
+    - ca-certificates
+    - python-docker
+
+  pkg:
+    name: docker-ce
+    old_name: docker-engine
+    # For backward compatibility, this will be overriden by docker:version, if defined
+    version: latest
+    allow_updates: False
+    hold: False
+
+  pip:
+    install_pypi_pip: False
+    upgrade: False
+
+  compose_version: ''
+
+  containers:
+    skip_translate: None
+    force_present: False
+    force_running: False
+
+  kernel:
+    pkg:
+      fromrepo: ''
+    pkgs: []
+
