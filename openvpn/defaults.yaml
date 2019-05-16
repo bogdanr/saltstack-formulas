@@ -1,0 +1,17 @@
+openvpn:
+  conf_dir: /etc/openvpn
+  conf_ext: conf
+  dh_files: ['2048', '4096']
+  dsaparam: False
+  external_repo_enabled: False
+  external_repo_supported: []
+  external_repo_version: stable
+  group: nobody
+  multi_services: False
+  pkgs: ['openvpn']
+  service: openvpn
+  service_function: running
+  user: nobody
+  network_manager_pkgs:
+    - network-manager-openvpn
+    - network-manager-openvpn-gnome

@@ -1,0 +1,36 @@
+# OpenVPN client configuration '{{ name }}'
+# Managed by Salt
+# Template: {{ source }}
+
+{% include 'openvpn/files/common_opts.jinja' %}
+{%- set config = salt['pillar.get']("openvpn:{}:{}".format(type, name), {}) %}
+
+{%- if not (config.pull is defined and config.pull == False) %}
+pull
+{% endif %}
+
+{%- if not (config.tls_client is defined and config.tls_client == False) %}
+tls-client
+{%- endif %}
+
+{%- if config.resolv_retry is defined %}
+resolv-retry {{ config.resolv_retry }}
+{%- else %}
+resolv-retry infinite
+{%- endif %}
+
+{%- if not (config.nobind is defined and config.nobind == False) %}
+nobind
+{%- endif %}
+
+{%- if config.http_proxy_retry is defined %}
+http-proxy-retry
+{%- endif %}
+
+{%- if config.http_proxy is defined %}
+http-proxy {{ config.http_proxy }}
+{%- endif %}
+
+{%- if config.auth_user_pass is defined %}
+auth-user-pass {{ config.auth_user_pass }}
+{%- endif %}

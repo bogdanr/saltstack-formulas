@@ -1,0 +1,123 @@
+# OpenVPN server configuration '{{ name }}'
+# Managed by Salt
+# Template: {{ source }}
+
+{% include 'openvpn/files/common_opts.jinja' %}
+{%- set config = salt['pillar.get']("openvpn:{}:{}".format(type, name), {}) %}
+
+
+{%- if not (config.tls_server is defined and config.tls_server == False) %}
+{%- if not (config.secret is defined) %}
+tls-server
+{%- endif %}
+{%- endif %}
+
+{%- if config.local is defined %}
+local {{ config.local }}
+{%- endif %}
+
+{%- if config.port_share is defined %}
+port-share {{ config.port_share }}
+{%- endif %}
+
+{%- if config.topology is defined %}
+topology {{ config.topology }}
+{%- endif %}
+
+{%- if config.server is defined %}
+server {{ config.server }}
+{%- elif config.server_bridge is defined %}
+server-bridge {{ config.server_bridge }}
+{%- elif config.mode is defined %}
+mode {{ config.mode }}
+{%- endif %}
+
+{%- if config.ifconfig_pool is defined %}
+ifconfig-pool {{ config.ifconfig_pool }}
+{%- endif %}
+
+{%- if config.server_ipv6 is defined %}
+server-ipv6 {{ config.server_ipv6 }}
+{%- endif %}
+
+{%- if config.ifconfig_ipv6 is defined %}
+ifconfig-ipv6 {{ config.ifconfig_ipv6 }}
+{%- endif %}
+
+{%- if config.ifconfig_ipv6_pool is defined %}
+ifconfig-ipv6-pool {{ config.ifconfig_ipv6_pool }}
+{%- endif %}
+
+{%- if config.ifconfig_pool_persist is defined %}
+ifconfig-pool-persist {{ config.ifconfig_pool_persist }}
+{%- endif %}
+
+{%- if config.server_bridge is defined %}
+server-bridge {{ config.server_bridge }}
+{%- endif %}
+
+{%- if config.push is defined %}
+{%- for push in config.push %}
+push "{{ push }}"
+{%- endfor %}
+{%- endif %}
+
+{%- if config.client_config_dir is defined %}
+client-config-dir {{ config.client_config_dir }}
+{%- endif %}
+
+{%- if config.learn_address is defined %}
+learn-address {{ config.learn_address }}
+{%- endif %}
+
+{%- if config.client_to_client is defined and config.client_to_client == True %}
+client-to-client
+{%- endif %}
+
+{%- if config.duplicate_cn is defined and config.duplicate_cn == True %}
+duplicate-cn
+{%- endif %}
+
+{%- if config.max_clients is defined %}
+max-clients {{ config.max_clients }}
+{%- endif %}
+
+{%- if config.ccd_exclusive is defined and config.ccd_exclusive == True %}
+ccd-exclusive
+{%- endif %}
+
+{%- if config.username_as_common_name is defined and config.username_as_common_name == True %}
+username-as-common-name
+{%- endif %}
+
+{%- if config.plugins is defined %}
+{%- for plugin in config.plugins %}
+plugin {{ plugin }}
+{%- endfor %}
+{%- endif %}
+
+{%- if config.client_cert_not_required is defined %}
+client-cert-not-required
+{%- endif %}
+
+{%- if config.verify_client_cert is defined %}
+verify-client-cert {{ config.verify_client_cert }}
+{%- endif %}
+
+{%- if config.management is defined %}
+management {{ config.management }}
+{%- endif %}
+
+{%- if config.script_security is defined %}
+script-security {{ config.script_security }}
+{%- endif %}
+
+{%- if config.auth_user_pass_verify is defined %}
+auth-user-pass-verify {{ config.auth_user_pass_verify }}
+{%- endif %}
+
+{%- if config.setenv is defined %}
+{%- for setenv in config.setenv %}
+setenv {{ setenv }}
+{% endfor %}
+{% endif %}

@@ -1,0 +1,6 @@
+# OpenVPN peer configuration '{{ name }}'
+# Managed by Salt
+# Template: {{ source }}
+
+{% include 'openvpn/files/common_opts.jinja' %}
+{% include 'openvpn/files/server.jinja' %}
